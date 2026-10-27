@@ -1,0 +1,88 @@
+set_location:
+  target:
+    entity:
+      integration: wisemirror
+  fields:
+    city:
+      example: Berlin
+      selector:
+        text:
+    name:
+      example: Madrid
+      selector:
+        text:
+    latitude:
+      example: 52.52
+      selector:
+        number:
+          min: -90
+          max: 90
+          step: any
+          mode: box
+    longitude:
+      example: 13.40
+      selector:
+        number:
+          min: -180
+          max: 180
+          step: any
+          mode: box
+    location_key:
+      selector:
+        text:
+
+send_command:
+  target:
+    entity:
+      integration: wisemirror
+  fields:
+    command:
+      required: true
+      example: 6
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: box
+    payload:
+      example: "32"
+      default: "00"
+      selector:
+        text:
+
+update_firmware:
+  target:
+    entity:
+      integration: wisemirror
+  fields:
+    file:
+      required: true
+      example: /config/www/AST8J12.bin
+      selector:
+        text:
+
+provision_wifi:
+  fields:
+    ssid:
+      required: true
+      selector:
+        text:
+    password:
+      selector:
+        text:
+          type: password
+    method:
+      default: access_point
+      selector:
+        select:
+          options:
+            - access_point
+            - bluetooth
+    host:
+      default: 192.168.4.1
+      selector:
+        text:
+    ble_address:
+      example: "AA:BB:CC:DD:EE:01"
+      selector:
+        text:

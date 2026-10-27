@@ -1,0 +1,40 @@
+name: Device report
+description: Tell us whether the integration works with your mirror.
+labels: [device report]
+body:
+  - type: input
+    id: brand
+    attributes:
+      label: Brand and product
+      placeholder: e.g. Alasta, BYECOLD, GS Mirror
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Model and firmware (Firmware sensor, or the discovery reply)
+      placeholder: e.g. 2M09, V1.9.250215
+    validations:
+      required: true
+  - type: dropdown
+    id: result
+    attributes:
+      label: Does it work?
+      options:
+        - Everything works
+        - Partly
+        - Not at all
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: What works and what doesn't
+      description: >-
+        Output of `python3 scripts/wisemirror.py status <ip>` is very helpful,
+        especially whether the heartbeat answers.
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: Settings → Devices & services → WiseMirror → ⋮ → Download diagnostics.

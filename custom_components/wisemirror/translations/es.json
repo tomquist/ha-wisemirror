@@ -1,0 +1,335 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "WiseMirror",
+        "description": "Selecciona un espejo encontrado en tu red.",
+        "data": {
+          "device": "Espejo"
+        }
+      },
+      "manual": {
+        "title": "Añadir un WiseMirror por dirección IP",
+        "description": "Ningún espejo nuevo respondió a la difusión. Introduce la dirección IP del espejo; ya debe estar conectado a tu Wi-Fi. Se recomienda una reserva DHCP.",
+        "data": {
+          "host": "Dirección IP"
+        },
+        "data_description": {
+          "host": "La integración envía una consulta de descubrimiento al puerto UDP 8000 de esta dirección y después intenta leer los ajustes en el puerto 8001."
+        }
+      },
+      "reconfigure": {
+        "title": "Cambiar la dirección IP del espejo",
+        "description": "Introduce la nueva dirección IP del espejo. Se rechaza una dirección que responda con la dirección MAC de otro espejo.",
+        "data": {
+          "host": "Dirección IP"
+        },
+        "data_description": {
+          "host": "El espejo ya debe estar conectado a tu Wi-Fi."
+        }
+      },
+      "discovery_confirm": {
+        "description": "¿Añadir {name} ({model}) en {host}?"
+      },
+      "bluetooth_confirm": {
+        "description": "¿Añadir {name}? Ya está conectado al Wi-Fi; Home Assistant lo buscará en la red y usará Bluetooth como alternativa."
+      },
+      "wifi": {
+        "title": "Configurar el Wi-Fi",
+        "description": "{name} todavía no está conectado al Wi-Fi. Introduce una red de 2,4 GHz; las credenciales se envían por Bluetooth sin cifrar.",
+        "data": {
+          "ssid": "Nombre de la red (SSID)",
+          "password": "Contraseña"
+        }
+      }
+    },
+    "progress": {
+      "provision": "Enviando las credenciales del Wi-Fi y esperando a que el espejo se conecte a la red. Puede tardar hasta 90 segundos."
+    },
+    "error": {
+      "cannot_connect": "No se pudo contactar con un espejo en esa dirección.",
+      "ble_failed": "No se pudieron enviar las credenciales por Bluetooth. Acércate al espejo e inténtalo de nuevo.",
+      "not_found": "El espejo no apareció en la red. Comprueba el SSID y la contraseña; solo funcionan redes de 2,4 GHz."
+    },
+    "abort": {
+      "already_configured": "Este espejo ya está configurado.",
+      "already_in_progress": "Este espejo ya se está configurando.",
+      "not_supported": "Este dispositivo Bluetooth no es un WiseMirror compatible.",
+      "not_wisemirror": "Este dispositivo no es un WiseMirror.",
+      "reconfigure_successful": "Se ha actualizado la dirección del espejo.",
+      "wrong_device": "Esa dirección pertenece a otro espejo. Para añadirlo, configúralo como un dispositivo nuevo."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opciones de WiseMirror",
+        "data": {
+          "heartbeat_interval": "Intervalo de sondeo (segundos)",
+          "settings_interval": "Intervalo de lectura de ajustes (segundos)",
+          "apply_to_all": "Usar estos intervalos en todos los espejos",
+          "use_ha_location": "Seguir la ubicación de casa de Home Assistant"
+        },
+        "data_description": {
+          "heartbeat_interval": "Cada cuánto se consulta al espejo la temperatura, la humedad y si está accesible. Por defecto 30 s.",
+          "settings_interval": "Cada cuánto se vuelven a leer los ajustes para recoger los cambios hechos en la app o en el espejo. Por defecto 300 s.",
+          "apply_to_all": "Copia ambos intervalos a todos los WiseMirror configurados.",
+          "use_ha_location": "Mantiene la ubicación del tiempo del espejo sincronizada con la ubicación de casa de Home Assistant. Mientras está desactivado, la integración nunca cambia la ubicación por su cuenta."
+        }
+      }
+    }
+  },
+  "selector": {
+    "device": {
+      "options": {
+        "manual": "Introducir la dirección IP manualmente…"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "connectivity": {
+        "name": "Conectividad"
+      },
+      "always_bright": {
+        "name": "Siempre encendido"
+      }
+    },
+    "button": {
+      "use_home_location": {
+        "name": "Usar la ubicación de casa"
+      }
+    },
+    "number": {
+      "brightness_percent": {
+        "name": "Brillo de la pantalla"
+      },
+      "sleep_brightness_percent": {
+        "name": "Brillo nocturno"
+      }
+    },
+    "select": {
+      "temperature_unit": {
+        "name": "Unidad de temperatura",
+        "state": {
+          "celsius": "°C",
+          "fahrenheit": "°F"
+        }
+      },
+      "weekday_language": {
+        "name": "Idioma del día de la semana",
+        "state": {
+          "english": "Inglés",
+          "chinese": "Chino"
+        }
+      },
+      "brightness_preset": {
+        "name": "Nivel de brillo de la pantalla",
+        "state": {
+          "low": "Bajo",
+          "medium": "Medio",
+          "high": "Alto"
+        }
+      },
+      "sleep_brightness_preset": {
+        "name": "Nivel de brillo nocturno",
+        "state": {
+          "low": "Bajo",
+          "medium": "Medio",
+          "high": "Alto"
+        }
+      },
+      "weather_source": {
+        "name": "Fuente del tiempo",
+        "state": {
+          "auto": "Automática",
+          "no_1": "NO.1",
+          "no_2": "NO.2",
+          "no_3": "NO.3",
+          "no_4": "NO.4",
+          "no_5": "NO.5"
+        }
+      }
+    },
+    "sensor": {
+      "firmware": {
+        "name": "Firmware"
+      },
+      "connection": {
+        "name": "Conexión",
+        "state": {
+          "wifi": "Wi-Fi",
+          "bluetooth": "Bluetooth"
+        }
+      },
+      "ip_address": {
+        "name": "Dirección IP"
+      },
+      "weather_location": {
+        "name": "Ubicación del tiempo"
+      },
+      "brightness_duration": {
+        "name": "Duración del brillo"
+      },
+      "time_date_mode": {
+        "name": "Modo de hora y fecha"
+      },
+      "alarm": {
+        "name": "Alarma {number}"
+      }
+    },
+    "switch": {
+      "key_tone": {
+        "name": "Sonido de teclas"
+      },
+      "clock_24h": {
+        "name": "Reloj de 24 horas"
+      },
+      "day_first": {
+        "name": "Día antes que el mes"
+      },
+      "sleep_mode": {
+        "name": "Modo nocturno"
+      },
+      "two_day_weather": {
+        "name": "Tiempo de dos días"
+      },
+      "today_weather": {
+        "name": "Tiempo de hoy"
+      }
+    },
+    "text": {
+      "device_name": {
+        "name": "Nombre del espejo"
+      },
+      "location": {
+        "name": "Texto de la ubicación del tiempo"
+      }
+    },
+    "time": {
+      "sleep_start": {
+        "name": "Inicio del modo nocturno"
+      },
+      "sleep_end": {
+        "name": "Fin del modo nocturno"
+      }
+    }
+  },
+  "exceptions": {
+    "update_failed": {
+      "message": "{name} no responde (dirección {host})."
+    },
+    "settings_failed": {
+      "message": "No se pudieron leer los ajustes de {name}: {error}"
+    },
+    "command_failed": {
+      "message": "No se pudo enviar el comando {command} a {name}: {error}"
+    },
+    "command_rejected": {
+      "message": "{name} rechazó el comando {command}."
+    },
+    "no_target_mirror": {
+      "message": "Ningún WiseMirror cargado coincide con el destino seleccionado."
+    },
+    "one_mirror_only": {
+      "message": "Esta acción funciona con un solo espejo a la vez; selecciona un único espejo."
+    },
+    "no_address": {
+      "message": "No se conoce la dirección IP del espejo."
+    },
+    "path_not_allowed": {
+      "message": "{path} no está dentro de allowlist_external_dirs."
+    },
+    "firmware_failed": {
+      "message": "Falló la actualización del firmware: {error}"
+    },
+    "ble_address_required": {
+      "message": "Se necesita una dirección Bluetooth para el método bluetooth."
+    },
+    "provision_failed": {
+      "message": "Falló la configuración del Wi-Fi: {error}"
+    },
+    "invalid_payload": {
+      "message": "Carga hexadecimal no válida: {payload}"
+    }
+  },
+  "services": {
+    "set_location": {
+      "name": "Establecer la ubicación del tiempo",
+      "description": "Envía la ubicación que el espejo usa para consultar el tiempo. Los campos que faltan se toman de la zona de casa.",
+      "fields": {
+        "city": {
+          "name": "Ciudad",
+          "description": "Nombre de la ciudad; se codifica para URL antes de enviarlo."
+        },
+        "name": {
+          "name": "Nombre",
+          "description": "Igual que Ciudad; se acepta por compatibilidad."
+        },
+        "latitude": {
+          "name": "Latitud",
+          "description": "Latitud de la ubicación."
+        },
+        "longitude": {
+          "name": "Longitud",
+          "description": "Longitud de la ubicación."
+        },
+        "location_key": {
+          "name": "Clave de ubicación de AccuWeather",
+          "description": "Clave de ubicación de AccuWeather opcional. Déjala vacía para usar las coordenadas."
+        }
+      }
+    },
+    "send_command": {
+      "name": "Enviar un comando sin procesar",
+      "description": "Envía una trama A5 con cualquier código de comando y carga a un espejo y devuelve la respuesta.",
+      "fields": {
+        "command": {
+          "name": "Código de comando",
+          "description": "Código de comando, 0-255 (por ejemplo 6 para el brillo)."
+        },
+        "payload": {
+          "name": "Carga",
+          "description": "Bytes de la carga en hexadecimal, por ejemplo \"32\"."
+        }
+      }
+    },
+    "update_firmware": {
+      "name": "Actualizar el firmware",
+      "description": "Sirve una imagen de firmware por HTTP y le indica a un espejo que la instale. No hay comprobación de firma; usa solo imágenes hechas para este modelo.",
+      "fields": {
+        "file": {
+          "name": "Archivo de imagen",
+          "description": "Ruta a la imagen .bin. Debe estar dentro de allowlist_external_dirs."
+        }
+      }
+    },
+    "provision_wifi": {
+      "name": "Configurar el Wi-Fi del espejo",
+      "description": "Envía las credenciales del Wi-Fi a un espejo en modo AP (TCP 8408) o por Bluetooth (2M09).",
+      "fields": {
+        "ssid": {
+          "name": "Nombre de la red (SSID)",
+          "description": "Red de 2,4 GHz a la que debe conectarse el espejo."
+        },
+        "password": {
+          "name": "Contraseña",
+          "description": "Contraseña de la red."
+        },
+        "method": {
+          "name": "Método",
+          "description": "access_point: Home Assistant está conectado a la red WiseMirror-XXXX del espejo. bluetooth: enviar por BLE."
+        },
+        "host": {
+          "name": "Dirección del espejo",
+          "description": "Dirección del espejo en modo AP."
+        },
+        "ble_address": {
+          "name": "Dirección Bluetooth",
+          "description": "Dirección Bluetooth del espejo, para el método bluetooth."
+        }
+      }
+    }
+  }
+}

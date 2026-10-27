@@ -1,0 +1,29 @@
+name: Release
+
+# HACS installs from the release tag. This checks that the tag matches the
+# version in manifest.json and pyproject.toml, then runs the usual checks.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare the tag with manifest.json and pyproject.toml
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          manifest="$(python3 -c "import json; print(json.load(open('custom_components/wisemirror/manifest.json'))['version'])")"
+          project="$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")"
+          if [ "$tag" != "$manifest" ] || [ "$tag" != "$project" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match manifest.json ($manifest) and pyproject.toml ($project)"
+            exit 1
+          fi
+
+  validate:
+    needs: version
+    uses: ./.github/workflows/validate.yml

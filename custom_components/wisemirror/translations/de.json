@@ -1,0 +1,335 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "WiseMirror",
+        "description": "Wähle einen Spiegel aus, der in deinem Netzwerk gefunden wurde.",
+        "data": {
+          "device": "Spiegel"
+        }
+      },
+      "manual": {
+        "title": "WiseMirror per IP-Adresse hinzufügen",
+        "description": "Kein neuer Spiegel hat auf den Broadcast geantwortet. Gib die IP-Adresse des Spiegels ein; er muss bereits mit deinem WLAN verbunden sein. Eine DHCP-Reservierung wird empfohlen.",
+        "data": {
+          "host": "IP-Adresse"
+        },
+        "data_description": {
+          "host": "Die Integration sendet eine Discovery-Anfrage an UDP-Port 8000 dieser Adresse und versucht danach, die Einstellungen über Port 8001 zu lesen."
+        }
+      },
+      "reconfigure": {
+        "title": "IP-Adresse des Spiegels ändern",
+        "description": "Gib die neue IP-Adresse des Spiegels ein. Eine Adresse, die mit der MAC-Adresse eines anderen Spiegels antwortet, wird abgelehnt.",
+        "data": {
+          "host": "IP-Adresse"
+        },
+        "data_description": {
+          "host": "Der Spiegel muss bereits mit deinem WLAN verbunden sein."
+        }
+      },
+      "discovery_confirm": {
+        "description": "{name} ({model}) unter {host} hinzufügen?"
+      },
+      "bluetooth_confirm": {
+        "description": "{name} hinzufügen? Er ist bereits mit dem WLAN verbunden; Home Assistant sucht ihn im Netzwerk und nutzt Bluetooth als Ausweichweg."
+      },
+      "wifi": {
+        "title": "WLAN einrichten",
+        "description": "{name} ist noch nicht mit dem WLAN verbunden. Gib ein 2,4-GHz-Netzwerk ein; die Zugangsdaten werden unverschlüsselt über Bluetooth gesendet.",
+        "data": {
+          "ssid": "Netzwerkname (SSID)",
+          "password": "Passwort"
+        }
+      }
+    },
+    "progress": {
+      "provision": "Die WLAN-Zugangsdaten werden gesendet und es wird gewartet, bis der Spiegel dem Netzwerk beitritt. Das kann bis zu 90 Sekunden dauern."
+    },
+    "error": {
+      "cannot_connect": "Unter dieser Adresse wurde kein Spiegel erreicht.",
+      "ble_failed": "Die Zugangsdaten konnten nicht über Bluetooth gesendet werden. Geh näher an den Spiegel heran und versuche es erneut.",
+      "not_found": "Der Spiegel ist nicht im Netzwerk aufgetaucht. Prüfe SSID und Passwort; nur 2,4-GHz-Netzwerke funktionieren."
+    },
+    "abort": {
+      "already_configured": "Dieser Spiegel ist bereits eingerichtet.",
+      "already_in_progress": "Dieser Spiegel wird bereits eingerichtet.",
+      "not_supported": "Dieses Bluetooth-Gerät ist kein unterstützter WiseMirror.",
+      "not_wisemirror": "Dieses Gerät ist kein WiseMirror.",
+      "reconfigure_successful": "Die Adresse des Spiegels wurde aktualisiert.",
+      "wrong_device": "Diese Adresse gehört zu einem anderen Spiegel. Richte ihn stattdessen als neues Gerät ein."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WiseMirror-Optionen",
+        "data": {
+          "heartbeat_interval": "Abfrageintervall (Sekunden)",
+          "settings_interval": "Intervall zum Lesen der Einstellungen (Sekunden)",
+          "apply_to_all": "Diese Intervalle für alle Spiegel verwenden",
+          "use_ha_location": "Dem Heimstandort von Home Assistant folgen"
+        },
+        "data_description": {
+          "heartbeat_interval": "Wie oft der Spiegel nach Temperatur, Luftfeuchtigkeit und Erreichbarkeit abgefragt wird. Standard 30 s.",
+          "settings_interval": "Wie oft die Einstellungen neu gelesen werden, um Änderungen aus der App oder am Spiegel zu übernehmen. Standard 300 s.",
+          "apply_to_all": "Überträgt beide Intervalle auf alle eingerichteten WiseMirror.",
+          "use_ha_location": "Hält den Wetterstandort des Spiegels mit dem Heimstandort von Home Assistant synchron. Solange die Option aus ist, ändert die Integration den Standort nie von sich aus."
+        }
+      }
+    }
+  },
+  "selector": {
+    "device": {
+      "options": {
+        "manual": "IP-Adresse manuell eingeben…"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "connectivity": {
+        "name": "Verbindung"
+      },
+      "always_bright": {
+        "name": "Immer hell"
+      }
+    },
+    "button": {
+      "use_home_location": {
+        "name": "Heimstandort verwenden"
+      }
+    },
+    "number": {
+      "brightness_percent": {
+        "name": "Displayhelligkeit"
+      },
+      "sleep_brightness_percent": {
+        "name": "Nachthelligkeit"
+      }
+    },
+    "select": {
+      "temperature_unit": {
+        "name": "Temperatureinheit",
+        "state": {
+          "celsius": "°C",
+          "fahrenheit": "°F"
+        }
+      },
+      "weekday_language": {
+        "name": "Sprache des Wochentags",
+        "state": {
+          "english": "Englisch",
+          "chinese": "Chinesisch"
+        }
+      },
+      "brightness_preset": {
+        "name": "Displayhelligkeit (Stufe)",
+        "state": {
+          "low": "Niedrig",
+          "medium": "Mittel",
+          "high": "Hoch"
+        }
+      },
+      "sleep_brightness_preset": {
+        "name": "Nachthelligkeit (Stufe)",
+        "state": {
+          "low": "Niedrig",
+          "medium": "Mittel",
+          "high": "Hoch"
+        }
+      },
+      "weather_source": {
+        "name": "Wetterquelle",
+        "state": {
+          "auto": "Automatisch",
+          "no_1": "NO.1",
+          "no_2": "NO.2",
+          "no_3": "NO.3",
+          "no_4": "NO.4",
+          "no_5": "NO.5"
+        }
+      }
+    },
+    "sensor": {
+      "firmware": {
+        "name": "Firmware"
+      },
+      "connection": {
+        "name": "Verbindungsweg",
+        "state": {
+          "wifi": "WLAN",
+          "bluetooth": "Bluetooth"
+        }
+      },
+      "ip_address": {
+        "name": "IP-Adresse"
+      },
+      "weather_location": {
+        "name": "Wetterstandort"
+      },
+      "brightness_duration": {
+        "name": "Helligkeitsdauer"
+      },
+      "time_date_mode": {
+        "name": "Zeit-/Datumsmodus"
+      },
+      "alarm": {
+        "name": "Wecker {number}"
+      }
+    },
+    "switch": {
+      "key_tone": {
+        "name": "Tastenton"
+      },
+      "clock_24h": {
+        "name": "24-Stunden-Uhr"
+      },
+      "day_first": {
+        "name": "Tag vor Monat"
+      },
+      "sleep_mode": {
+        "name": "Nachtmodus"
+      },
+      "two_day_weather": {
+        "name": "Zwei-Tage-Wetter"
+      },
+      "today_weather": {
+        "name": "Heutiges Wetter"
+      }
+    },
+    "text": {
+      "device_name": {
+        "name": "Spiegelname"
+      },
+      "location": {
+        "name": "Wetterstandort (Rohtext)"
+      }
+    },
+    "time": {
+      "sleep_start": {
+        "name": "Beginn des Nachtmodus"
+      },
+      "sleep_end": {
+        "name": "Ende des Nachtmodus"
+      }
+    }
+  },
+  "exceptions": {
+    "update_failed": {
+      "message": "{name} antwortet nicht (Adresse {host})."
+    },
+    "settings_failed": {
+      "message": "Die Einstellungen von {name} konnten nicht gelesen werden: {error}"
+    },
+    "command_failed": {
+      "message": "Befehl {command} konnte nicht an {name} gesendet werden: {error}"
+    },
+    "command_rejected": {
+      "message": "{name} hat den Befehl {command} abgelehnt."
+    },
+    "no_target_mirror": {
+      "message": "Kein geladener WiseMirror passt zum ausgewählten Ziel."
+    },
+    "one_mirror_only": {
+      "message": "Diese Aktion funktioniert nur mit einem Spiegel gleichzeitig; wähle einen einzelnen Spiegel aus."
+    },
+    "no_address": {
+      "message": "Die IP-Adresse des Spiegels ist nicht bekannt."
+    },
+    "path_not_allowed": {
+      "message": "{path} liegt nicht in allowlist_external_dirs."
+    },
+    "firmware_failed": {
+      "message": "Firmware-Update fehlgeschlagen: {error}"
+    },
+    "ble_address_required": {
+      "message": "Für die Methode bluetooth wird eine Bluetooth-Adresse benötigt."
+    },
+    "provision_failed": {
+      "message": "WLAN-Einrichtung fehlgeschlagen: {error}"
+    },
+    "invalid_payload": {
+      "message": "Ungültige Hex-Nutzdaten: {payload}"
+    }
+  },
+  "services": {
+    "set_location": {
+      "name": "Wetterstandort festlegen",
+      "description": "Sendet den Standort, für den der Spiegel das Wetter abruft. Fehlende Felder werden aus der Heimzone übernommen.",
+      "fields": {
+        "city": {
+          "name": "Stadt",
+          "description": "Name der Stadt; er wird vor dem Senden URL-kodiert."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Wie Stadt; aus Kompatibilitätsgründen akzeptiert."
+        },
+        "latitude": {
+          "name": "Breitengrad",
+          "description": "Breitengrad des Standorts."
+        },
+        "longitude": {
+          "name": "Längengrad",
+          "description": "Längengrad des Standorts."
+        },
+        "location_key": {
+          "name": "AccuWeather-Standortschlüssel",
+          "description": "Optionaler AccuWeather-Standortschlüssel. Leer lassen, um die Koordinaten zu verwenden."
+        }
+      }
+    },
+    "send_command": {
+      "name": "Rohbefehl senden",
+      "description": "Sendet einen A5-Frame mit beliebigem Befehlscode und Nutzdaten an einen Spiegel und gibt die Antwort zurück.",
+      "fields": {
+        "command": {
+          "name": "Befehlscode",
+          "description": "Befehlscode, 0-255 (zum Beispiel 6 für die Helligkeit)."
+        },
+        "payload": {
+          "name": "Nutzdaten",
+          "description": "Nutzdaten als Hex, zum Beispiel \"32\"."
+        }
+      }
+    },
+    "update_firmware": {
+      "name": "Firmware aktualisieren",
+      "description": "Stellt ein Firmware-Image per HTTP bereit und weist einen Spiegel an, es zu installieren. Es gibt keine Signaturprüfung; verwende nur Images für dieses Modell.",
+      "fields": {
+        "file": {
+          "name": "Image-Datei",
+          "description": "Pfad zum .bin-Image. Er muss in allowlist_external_dirs liegen."
+        }
+      }
+    },
+    "provision_wifi": {
+      "name": "WLAN des Spiegels einrichten",
+      "description": "Sendet WLAN-Zugangsdaten an einen Spiegel im AP-Modus (TCP 8408) oder über Bluetooth (2M09).",
+      "fields": {
+        "ssid": {
+          "name": "Netzwerkname (SSID)",
+          "description": "2,4-GHz-Netzwerk, dem der Spiegel beitreten soll."
+        },
+        "password": {
+          "name": "Passwort",
+          "description": "Netzwerkpasswort."
+        },
+        "method": {
+          "name": "Methode",
+          "description": "access_point: Home Assistant ist mit dem Netzwerk WiseMirror-XXXX des Spiegels verbunden. bluetooth: Senden über BLE."
+        },
+        "host": {
+          "name": "Adresse des Spiegels",
+          "description": "Adresse des Spiegels im AP-Modus."
+        },
+        "ble_address": {
+          "name": "Bluetooth-Adresse",
+          "description": "Bluetooth-Adresse des Spiegels, für die Methode bluetooth."
+        }
+      }
+    }
+  }
+}
