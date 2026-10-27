@@ -1,0 +1,17 @@
+# Oldest supported Home Assistant (hacs.json), with the libraries it pins for
+# the components the tests load.
+homeassistant==2025.1.4
+pytest-homeassistant-custom-component==0.13.205
+aiodhcpwatcher==1.0.2
+aiodiscover==2.1.0
+cached-ipaddress==0.8.0
+aiousbwatcher
+pyserial==3.5
+pyudev==0.24.1
+bleak==0.22.3
+bleak-retry-connector==3.6.0
+bluetooth-adapters==0.20.2
+bluetooth-auto-recovery==1.4.2
+bluetooth-data-tools==1.20.0
+dbus-fast==2.24.3
+habluetooth==3.7.0

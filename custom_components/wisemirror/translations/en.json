@@ -1,0 +1,335 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "WiseMirror",
+        "description": "Select a mirror found on your network.",
+        "data": {
+          "device": "Mirror"
+        }
+      },
+      "manual": {
+        "title": "Add a WiseMirror by IP address",
+        "description": "No new mirror answered the broadcast. Enter the mirror's IP address; it must already be on your Wi-Fi. A DHCP reservation is recommended.",
+        "data": {
+          "host": "IP address"
+        },
+        "data_description": {
+          "host": "The integration sends a discovery query to UDP port 8000 at this address, then tries a settings read on port 8001."
+        }
+      },
+      "reconfigure": {
+        "title": "Change the mirror's IP address",
+        "description": "Enter the mirror's new IP address. An address that answers with a different mirror's MAC address is refused.",
+        "data": {
+          "host": "IP address"
+        },
+        "data_description": {
+          "host": "The mirror must already be on your Wi-Fi."
+        }
+      },
+      "discovery_confirm": {
+        "description": "Add {name} ({model}) at {host}?"
+      },
+      "bluetooth_confirm": {
+        "description": "Add {name}? It is already on Wi-Fi; Home Assistant will look for it on the network and use Bluetooth as a fallback."
+      },
+      "wifi": {
+        "title": "Set up Wi-Fi",
+        "description": "{name} is not on Wi-Fi yet. Enter a 2.4 GHz network; the credentials are sent over Bluetooth in clear text.",
+        "data": {
+          "ssid": "Network name (SSID)",
+          "password": "Password"
+        }
+      }
+    },
+    "progress": {
+      "provision": "Sending the Wi-Fi credentials and waiting for the mirror to join the network. This can take up to 90 seconds."
+    },
+    "error": {
+      "cannot_connect": "Could not reach a mirror at that address.",
+      "ble_failed": "Could not send the credentials over Bluetooth. Move closer to the mirror and try again.",
+      "not_found": "The mirror did not appear on the network. Check the SSID and password; only 2.4 GHz networks work."
+    },
+    "abort": {
+      "already_configured": "This mirror is already configured.",
+      "already_in_progress": "This mirror is already being set up.",
+      "not_supported": "This Bluetooth device is not a supported WiseMirror.",
+      "not_wisemirror": "This device is not a WiseMirror.",
+      "reconfigure_successful": "The mirror's address has been updated.",
+      "wrong_device": "That address belongs to a different mirror. To add it, set it up as a new device instead."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WiseMirror options",
+        "data": {
+          "heartbeat_interval": "Poll interval (seconds)",
+          "settings_interval": "Settings refresh interval (seconds)",
+          "apply_to_all": "Use these intervals for all mirrors",
+          "use_ha_location": "Follow Home Assistant's home location"
+        },
+        "data_description": {
+          "heartbeat_interval": "How often the mirror is polled for temperature, humidity and reachability. Default 30 s.",
+          "settings_interval": "How often the settings are re-read to pick up changes made in the app or on the mirror. Default 300 s.",
+          "apply_to_all": "Copy both intervals to every configured WiseMirror.",
+          "use_ha_location": "Keep the mirror's weather location in sync with Home Assistant's home location. While it is off, the integration never changes the location on its own."
+        }
+      }
+    }
+  },
+  "selector": {
+    "device": {
+      "options": {
+        "manual": "Enter IP address manually…"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "connectivity": {
+        "name": "Connectivity"
+      },
+      "always_bright": {
+        "name": "Always bright"
+      }
+    },
+    "button": {
+      "use_home_location": {
+        "name": "Use home location"
+      }
+    },
+    "number": {
+      "brightness_percent": {
+        "name": "Display brightness"
+      },
+      "sleep_brightness_percent": {
+        "name": "Sleep brightness"
+      }
+    },
+    "select": {
+      "temperature_unit": {
+        "name": "Temperature unit",
+        "state": {
+          "celsius": "°C",
+          "fahrenheit": "°F"
+        }
+      },
+      "weekday_language": {
+        "name": "Weekday language",
+        "state": {
+          "english": "English",
+          "chinese": "Chinese"
+        }
+      },
+      "brightness_preset": {
+        "name": "Display brightness preset",
+        "state": {
+          "low": "Low",
+          "medium": "Medium",
+          "high": "High"
+        }
+      },
+      "sleep_brightness_preset": {
+        "name": "Sleep brightness preset",
+        "state": {
+          "low": "Low",
+          "medium": "Medium",
+          "high": "High"
+        }
+      },
+      "weather_source": {
+        "name": "Weather source",
+        "state": {
+          "auto": "Auto",
+          "no_1": "NO.1",
+          "no_2": "NO.2",
+          "no_3": "NO.3",
+          "no_4": "NO.4",
+          "no_5": "NO.5"
+        }
+      }
+    },
+    "sensor": {
+      "firmware": {
+        "name": "Firmware"
+      },
+      "connection": {
+        "name": "Connection",
+        "state": {
+          "wifi": "Wi-Fi",
+          "bluetooth": "Bluetooth"
+        }
+      },
+      "ip_address": {
+        "name": "IP address"
+      },
+      "weather_location": {
+        "name": "Weather location"
+      },
+      "brightness_duration": {
+        "name": "Brightness duration"
+      },
+      "time_date_mode": {
+        "name": "Time/date mode"
+      },
+      "alarm": {
+        "name": "Alarm {number}"
+      }
+    },
+    "switch": {
+      "key_tone": {
+        "name": "Key tone"
+      },
+      "clock_24h": {
+        "name": "24-hour clock"
+      },
+      "day_first": {
+        "name": "Day before month"
+      },
+      "sleep_mode": {
+        "name": "Sleep mode"
+      },
+      "two_day_weather": {
+        "name": "Two-day weather"
+      },
+      "today_weather": {
+        "name": "Today's weather"
+      }
+    },
+    "text": {
+      "device_name": {
+        "name": "Mirror name"
+      },
+      "location": {
+        "name": "Weather location string"
+      }
+    },
+    "time": {
+      "sleep_start": {
+        "name": "Sleep start"
+      },
+      "sleep_end": {
+        "name": "Sleep end"
+      }
+    }
+  },
+  "exceptions": {
+    "update_failed": {
+      "message": "{name} is not responding (address {host})."
+    },
+    "settings_failed": {
+      "message": "Could not read the settings of {name}: {error}"
+    },
+    "command_failed": {
+      "message": "Could not send command {command} to {name}: {error}"
+    },
+    "command_rejected": {
+      "message": "{name} rejected command {command}."
+    },
+    "no_target_mirror": {
+      "message": "No loaded WiseMirror matches the selected target."
+    },
+    "one_mirror_only": {
+      "message": "This action works on one mirror at a time; select a single mirror."
+    },
+    "no_address": {
+      "message": "The mirror's IP address is not known."
+    },
+    "path_not_allowed": {
+      "message": "{path} is not inside allowlist_external_dirs."
+    },
+    "firmware_failed": {
+      "message": "Firmware update failed: {error}"
+    },
+    "ble_address_required": {
+      "message": "A Bluetooth address is required for the bluetooth method."
+    },
+    "provision_failed": {
+      "message": "Wi-Fi setup failed: {error}"
+    },
+    "invalid_payload": {
+      "message": "Invalid hex payload: {payload}"
+    }
+  },
+  "services": {
+    "set_location": {
+      "name": "Set weather location",
+      "description": "Sends the location the mirror uses for its weather lookup. Missing fields are taken from the home zone.",
+      "fields": {
+        "city": {
+          "name": "City",
+          "description": "City name; it is URL-encoded before sending."
+        },
+        "name": {
+          "name": "Name",
+          "description": "Same as City; accepted for compatibility."
+        },
+        "latitude": {
+          "name": "Latitude",
+          "description": "Latitude of the location."
+        },
+        "longitude": {
+          "name": "Longitude",
+          "description": "Longitude of the location."
+        },
+        "location_key": {
+          "name": "AccuWeather location key",
+          "description": "Optional AccuWeather location key. Leave it empty to use the coordinates."
+        }
+      }
+    },
+    "send_command": {
+      "name": "Send raw command",
+      "description": "Sends one A5 frame with any command code and payload to one mirror and returns the reply.",
+      "fields": {
+        "command": {
+          "name": "Command code",
+          "description": "Command code, 0-255 (for example 6 for brightness)."
+        },
+        "payload": {
+          "name": "Payload",
+          "description": "Payload bytes as hex, for example \"32\"."
+        }
+      }
+    },
+    "update_firmware": {
+      "name": "Update firmware",
+      "description": "Serves a firmware image over HTTP and tells one mirror to install it. There is no signature check; use only images made for this model.",
+      "fields": {
+        "file": {
+          "name": "Image file",
+          "description": "Path to the .bin image. It must be inside allowlist_external_dirs."
+        }
+      }
+    },
+    "provision_wifi": {
+      "name": "Set up mirror Wi-Fi",
+      "description": "Sends Wi-Fi credentials to a mirror in AP mode (TCP 8408) or over Bluetooth (2M09).",
+      "fields": {
+        "ssid": {
+          "name": "Network name (SSID)",
+          "description": "2.4 GHz network the mirror should join."
+        },
+        "password": {
+          "name": "Password",
+          "description": "Network password."
+        },
+        "method": {
+          "name": "Method",
+          "description": "access_point: Home Assistant is connected to the mirror's WiseMirror-XXXX network. bluetooth: send over BLE."
+        },
+        "host": {
+          "name": "Mirror address",
+          "description": "Address of the mirror in AP mode."
+        },
+        "ble_address": {
+          "name": "Bluetooth address",
+          "description": "Bluetooth address of the mirror, for the bluetooth method."
+        }
+      }
+    }
+  }
+}
