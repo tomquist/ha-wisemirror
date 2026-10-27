@@ -63,9 +63,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: WiseMirrorConfigEntry) -
 
     @callback
     def _sync_firmware() -> None:
-        device = dr.async_get(hass).async_get_device(
-            identifiers={(DOMAIN, coordinator.identifier)}
-        )
+        device = coordinator.async_device()
         if (
             device is not None
             and coordinator.firmware
