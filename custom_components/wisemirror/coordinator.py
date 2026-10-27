@@ -15,6 +15,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .ble import WiseMirrorBleClient
@@ -158,6 +159,14 @@ class WiseMirrorCoordinator(DataUpdateCoordinator[MirrorData]):
     def weather_source_options(self) -> list[str]:
         """Weather-source options for this model and firmware."""
         return weather_source_options(self.model, self.version_number)
+
+    @callback
+    def async_device(self) -> dr.DeviceEntry | None:
+        """The mirror's device (each entry has exactly one)."""
+        devices = dr.async_entries_for_config_entry(
+            dr.async_get(self.hass), self.config_entry.entry_id
+        )
+        return devices[0] if devices else None
 
     @property
     def has_bluetooth(self) -> bool:

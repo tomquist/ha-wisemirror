@@ -197,9 +197,7 @@ async def _async_update_firmware(call: ServiceCall) -> ServiceResponse:
             translation_placeholders={"path": path},
         )
     image = await hass.async_add_executor_job(Path(path).read_bytes)
-    device = dr.async_get(hass).async_get_device(
-        identifiers={(DOMAIN, coordinator.identifier)}
-    )
+    device = coordinator.async_device()
     device_id = device.id if device else None
 
     @callback
