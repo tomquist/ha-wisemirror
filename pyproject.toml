@@ -3,6 +3,7 @@ name = "ha-wisemirror"
 version = "0.2.0"
 description = "Home Assistant integration for WiseMirror LED mirrors"
 requires-python = ">=3.12"
+license = "Apache-2.0"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
