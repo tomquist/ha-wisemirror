@@ -10,6 +10,7 @@ from homeassistant.const import CONF_HOST, STATE_UNAVAILABLE
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import device_registry as dr, entity_registry as er
+from homeassistant.setup import async_setup_component
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -124,7 +125,11 @@ async def test_setup_entities(hass: HomeAssistant, entry: MockConfigEntry) -> No
     assert state(hass, "sensor.bathroom_firmware") == "V4.6.230601"
     assert state(hass, "sensor.bathroom_connection") == "wifi"
     assert state(hass, "binary_sensor.bathroom_connectivity") == "on"
-    assert state(hass, "sensor.bathroom_weather_location") == "Berlin"
+    assert state(hass, "sensor.bathroom_weather_city") == "Berlin"
+    # No zone matches the stored location, so it is offered under its name.
+    weather_location = hass.states.get("select.bathroom_weather_location")
+    assert weather_location.state == "Berlin"
+    assert weather_location.attributes["options"] == ["Berlin"]
     assert state(hass, "switch.bathroom_24_hour_clock") == "on"
     assert state(hass, "switch.bathroom_day_before_month") == "off"
     assert state(hass, "switch.bathroom_sleep_mode") == "on"
@@ -146,9 +151,6 @@ async def test_setup_entities(hass: HomeAssistant, entry: MockConfigEntry) -> No
     assert state(hass, "time.bathroom_sleep_start") == "23:00:00"
     assert state(hass, "time.bathroom_sleep_end") == "06:30:00"
     assert state(hass, "text.bathroom_mirror_name") == "Bathroom"
-    location = hass.states.get("text.bathroom_weather_location_string")
-    assert location.state == "Berlin(52.52,13.40)()"
-    assert location.attributes["city"] == "Berlin"
 
     device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, MAC)})
     assert device.sw_version == "V4.6.230601"
@@ -159,6 +161,7 @@ async def test_setup_entities(hass: HomeAssistant, entry: MockConfigEntry) -> No
     assert registry.async_get("binary_sensor.bathroom_always_bright").disabled
     assert registry.async_get("switch.bathroom_key_tone").disabled
     assert registry.async_get("sensor.bathroom_ip_address").disabled
+    assert registry.async_get("text.bathroom_weather_location_advanced").disabled
     assert not registry.async_get("sensor.bathroom_humidity").disabled
 
 
@@ -274,18 +277,7 @@ async def test_writes(
         blocking=True,
     )
     assert mirror.state.location == "K%C3%B6ln(50.94,6.96)()"
-
-    await hass.services.async_call(
-        "text",
-        "set_value",
-        {
-            "entity_id": "text.bathroom_weather_location_string",
-            "value": "Paris(48.86,2.35)(623)",
-        },
-        blocking=True,
-    )
-    assert mirror.state.location == "Paris(48.86,2.35)(623)"
-    assert state(hass, "sensor.bathroom_weather_location") == "Paris"
+    assert state(hass, "sensor.bathroom_weather_city") == "Köln"
 
 
 async def test_services(
@@ -587,3 +579,64 @@ async def test_ip_keyed_entry(hass: HomeAssistant, mirror: FakeMirror) -> None:
     device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, "127.0.0.1")})
     assert device is not None
     assert state(hass, "sensor.wisemirror_127_0_0_1_temperature") == "22"
+
+
+async def test_weather_location_select(
+    hass: HomeAssistant, entry: MockConfigEntry, mirror: FakeMirror
+) -> None:
+    """Zones are offered; picking one sends its name and coordinates."""
+    hass.config.location_name = "Home"
+    hass.config.latitude = 48.1374
+    hass.config.longitude = 11.5755
+    assert await async_setup_component(
+        hass,
+        "zone",
+        {"zone": [{"name": "Office", "latitude": 52.52, "longitude": 13.405}]},
+    )
+    await hass.async_block_till_done()
+    entity_id = "select.bathroom_weather_location"
+    # The stored Berlin(52.52,13.40) matches the Office zone.
+    assert state(hass, entity_id) == "Office"
+    assert hass.states.get(entity_id).attributes["options"] == ["Home", "Office"]
+
+    await hass.services.async_call(
+        "select",
+        "select_option",
+        {"entity_id": entity_id, "option": "Home"},
+        blocking=True,
+    )
+    assert mirror.state.location == "Home(48.14,11.58)()"
+    assert state(hass, entity_id) == "Home"
+
+    # A location matching no zone shows up as its own option.
+    mirror.state.location = "Paris(48.86,2.35)(623)"
+    entry.runtime_data._settings_dirty = True
+    await entry.runtime_data.async_refresh()
+    assert state(hass, entity_id) == "Paris"
+    assert hass.states.get(entity_id).attributes["options"] == [
+        "Home",
+        "Office",
+        "Paris",
+    ]
+
+
+async def test_weather_location_advanced_text(
+    hass: HomeAssistant, entry: MockConfigEntry, mirror: FakeMirror
+) -> None:
+    """The raw location string is available once enabled."""
+    entity_id = "text.bathroom_weather_location_advanced"
+    er.async_get(hass).async_update_entity(entity_id, disabled_by=None)
+    await hass.config_entries.async_reload(entry.entry_id)
+    await hass.async_block_till_done()
+    location = hass.states.get(entity_id)
+    assert location.state == "Berlin(52.52,13.40)()"
+    assert location.attributes["city"] == "Berlin"
+
+    await hass.services.async_call(
+        "text",
+        "set_value",
+        {"entity_id": entity_id, "value": "Paris(48.86,2.35)(623)"},
+        blocking=True,
+    )
+    assert mirror.state.location == "Paris(48.86,2.35)(623)"
+    assert state(hass, "sensor.bathroom_weather_city") == "Paris"

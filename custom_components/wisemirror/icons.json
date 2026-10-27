@@ -1,59 +1,124 @@
 {
   "entity": {
     "binary_sensor": {
-      "connectivity": { "default": "mdi:wifi" },
-      "always_bright": { "default": "mdi:brightness-7" }
+      "connectivity": {
+        "default": "mdi:wifi"
+      },
+      "always_bright": {
+        "default": "mdi:brightness-7"
+      }
     },
     "button": {
-      "use_home_location": { "default": "mdi:home-map-marker" }
+      "use_home_location": {
+        "default": "mdi:home-map-marker"
+      }
     },
     "number": {
-      "brightness_percent": { "default": "mdi:brightness-6" },
-      "sleep_brightness_percent": { "default": "mdi:brightness-3" }
+      "brightness_percent": {
+        "default": "mdi:brightness-6"
+      },
+      "sleep_brightness_percent": {
+        "default": "mdi:brightness-3"
+      }
     },
     "select": {
-      "temperature_unit": { "default": "mdi:thermometer" },
-      "weekday_language": { "default": "mdi:translate" },
-      "brightness_preset": { "default": "mdi:brightness-6" },
-      "sleep_brightness_preset": { "default": "mdi:brightness-3" },
-      "weather_source": { "default": "mdi:cloud-search" }
+      "temperature_unit": {
+        "default": "mdi:thermometer"
+      },
+      "weekday_language": {
+        "default": "mdi:translate"
+      },
+      "brightness_preset": {
+        "default": "mdi:brightness-6"
+      },
+      "sleep_brightness_preset": {
+        "default": "mdi:brightness-3"
+      },
+      "weather_source": {
+        "default": "mdi:cloud-search"
+      },
+      "weather_location": {
+        "default": "mdi:map-marker-radius"
+      }
     },
     "sensor": {
-      "firmware": { "default": "mdi:chip" },
+      "firmware": {
+        "default": "mdi:chip"
+      },
       "connection": {
         "default": "mdi:wifi",
-        "state": { "bluetooth": "mdi:bluetooth" }
+        "state": {
+          "bluetooth": "mdi:bluetooth"
+        }
       },
-      "ip_address": { "default": "mdi:ip-network" },
-      "weather_location": { "default": "mdi:map-marker" },
-      "brightness_duration": { "default": "mdi:timer-outline" },
-      "time_date_mode": { "default": "mdi:calendar-clock" },
-      "alarm": { "default": "mdi:alarm" }
+      "ip_address": {
+        "default": "mdi:ip-network"
+      },
+      "weather_location": {
+        "default": "mdi:map-marker"
+      },
+      "brightness_duration": {
+        "default": "mdi:timer-outline"
+      },
+      "time_date_mode": {
+        "default": "mdi:calendar-clock"
+      },
+      "alarm": {
+        "default": "mdi:alarm"
+      }
     },
     "switch": {
-      "key_tone": { "default": "mdi:volume-high" },
-      "clock_24h": { "default": "mdi:clock-outline" },
-      "day_first": { "default": "mdi:calendar" },
+      "key_tone": {
+        "default": "mdi:volume-high"
+      },
+      "clock_24h": {
+        "default": "mdi:clock-outline"
+      },
+      "day_first": {
+        "default": "mdi:calendar"
+      },
       "sleep_mode": {
         "default": "mdi:weather-night",
-        "state": { "off": "mdi:weather-night-partly-cloudy" }
+        "state": {
+          "off": "mdi:weather-night-partly-cloudy"
+        }
       },
-      "two_day_weather": { "default": "mdi:weather-partly-cloudy" },
-      "today_weather": { "default": "mdi:weather-sunny" }
+      "two_day_weather": {
+        "default": "mdi:weather-partly-cloudy"
+      },
+      "today_weather": {
+        "default": "mdi:weather-sunny"
+      }
     },
     "text": {
-      "device_name": { "default": "mdi:rename" },
-      "location": { "default": "mdi:map-marker-outline" }
+      "device_name": {
+        "default": "mdi:rename"
+      },
+      "location": {
+        "default": "mdi:map-marker-outline"
+      }
     },
     "time": {
-      "sleep_start": { "default": "mdi:weather-sunset-down" },
-      "sleep_end": { "default": "mdi:weather-sunset-up" }
+      "sleep_start": {
+        "default": "mdi:weather-sunset-down"
+      },
+      "sleep_end": {
+        "default": "mdi:weather-sunset-up"
+      }
     }
   },
   "services": {
-    "set_location": { "service": "mdi:map-marker-plus" },
-    "send_command": { "service": "mdi:console" },
-    "update_firmware": { "service": "mdi:update" },
-    "provision_wifi": { "service": "mdi:wifi-plus" }
+    "set_location": {
+      "service": "mdi:map-marker-plus"
+    },
+    "send_command": {
+      "service": "mdi:console"
+    },
+    "update_firmware": {
+      "service": "mdi:update"
+    },
+    "provision_wifi": {
+      "service": "mdi:wifi-plus"
+    }
   }
 }
