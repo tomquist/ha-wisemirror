@@ -287,6 +287,10 @@ Real-device findings (the 2M09 discovery reply, °C and weather-source values,
 0–100 brightness, humidity 0 on models without a sensor) come from Jorge Diez's
 [jorgediez/ha-wisemirror](https://github.com/jorgediez/ha-wisemirror).
 
+## License
+
+[Apache License 2.0](LICENSE). Copyright 2026 Tom Quist.
+
 ## Disclaimer
 
 This is an unofficial community project, not affiliated with or endorsed by
