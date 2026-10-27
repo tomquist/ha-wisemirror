@@ -150,6 +150,9 @@
           "no_4": "NO.4",
           "no_5": "NO.5"
         }
+      },
+      "weather_location": {
+        "name": "Wetterstandort"
       }
     },
     "sensor": {
@@ -167,7 +170,7 @@
         "name": "IP-Adresse"
       },
       "weather_location": {
-        "name": "Wetterstandort"
+        "name": "Wetterort"
       },
       "brightness_duration": {
         "name": "Helligkeitsdauer"
@@ -204,7 +207,7 @@
         "name": "Spiegelname"
       },
       "location": {
-        "name": "Wetterstandort (Rohtext)"
+        "name": "Wetterstandort (erweitert)"
       }
     },
     "time": {

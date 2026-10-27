@@ -19,7 +19,7 @@ account is needed.
   (2M09), or through the mirror's access point with an action.
 - **Sensors:**
   - Indoor temperature and humidity.
-  - Firmware version, weather location, connectivity, connection path, IP address.
+  - Firmware version, weather city, connectivity, connection path, IP address.
   - The five alarms (read-only).
 - **Controls:**
   - Display and sleep brightness: raw 0–100 numbers, plus Low/Medium/High
@@ -28,8 +28,9 @@ account is needed.
   - 12/24-hour clock, day-month order, temperature unit, weekday language.
   - Two-day and today's weather, weather source.
   - Mirror name and weather location.
-- **Location:** a one-press "Use home location" button, an action, and an
-  option to follow Home Assistant's home location automatically.
+- **Weather location:** pick one of your Home Assistant zones, press "Use
+  home location", follow the home location automatically, or use an action.
+  See [Weather location](#weather-location).
 - **Resilience:**
   - Rediscovers a mirror by MAC address after an IP change.
   - Falls back to the discovery query when the mirror does not answer the
@@ -126,7 +127,7 @@ An address that answers with a different mirror's MAC is refused.
 | Sensor | Temperature | In the mirror's unit; Home Assistant converts it. |
 | Sensor | Humidity | Disabled by default on models without a sensor. |
 | Binary sensor | Connectivity | Stays available while the mirror is offline, so automations can see "off". Diagnostic. |
-| Sensor | Firmware, Connection (Wi-Fi/Bluetooth), Weather location | Diagnostic. |
+| Sensor | Firmware, Connection (Wi-Fi/Bluetooth), Weather city | Diagnostic. |
 | Sensor | IP address | Diagnostic, disabled by default. |
 | Sensor | Alarm 1–5, Brightness duration, Time/date mode | Read-only values; disabled by default. |
 | Binary sensor | Always bright | Read-only flag; disabled by default. |
@@ -138,11 +139,35 @@ An address that answers with a different mirror's MAC is refused.
 | Switch | Today's weather | Configuration, disabled by default. |
 | Select | Temperature unit, Weekday language, Weather source | Weather-source options depend on model and firmware. |
 | Time | Sleep start, Sleep end | |
-| Text | Mirror name, Weather location string | The location as raw `city(lat,lon)(key)`. |
+| Select | Weather location | Your Home Assistant zones; see [Weather location](#weather-location). |
+| Text | Mirror name | |
+| Text | Weather location (advanced) | Raw location string; disabled by default. |
 | Button | Use home location | Sends the home zone's name and coordinates. |
 
 All entities except Connectivity become unavailable after 4 missed polls. The mirror confirms every change; if it doesn't, you get an error
 in the UI.
+
+## Weather location
+
+The mirror downloads its weather forecast from the internet by itself. The
+weather location tells it **which place** to show the forecast for. It is a
+name plus coordinates: the coordinates decide the forecast, and the name is
+just a label. Without a sensible location the forecast is wrong or missing.
+Indoor temperature and humidity come from the mirror's own sensor and are not
+affected.
+
+Ways to set it, from simplest to most specific:
+
+| Way | What it sends |
+| --- | --- |
+| **Weather location** select | Lists your Home Assistant zones (Home, plus any you add under **Settings → Areas, labels & zones → Zones**). Picking one sends that zone's name and coordinates. A location set elsewhere that matches no zone is listed under its own name. |
+| **Use home location** button | The home zone, once. |
+| **Follow Home Assistant's home location** option | The home zone now, and again whenever you change it. |
+| `wisemirror.set_location` action | Any name and coordinates, for example from an automation. |
+| **Weather location (advanced)** text | The raw string `<city>(<latitude>,<longitude>)(<AccuWeather key>)`, for example `Berlin(52.52,13.40)()`. The key is optional and only matters for the AccuWeather weather source; leave the last brackets empty otherwise. Disabled by default. |
+
+To show the weather for a place that isn't home (a holiday flat, say), add a
+zone there and pick it in the select.
 
 ## Actions
 

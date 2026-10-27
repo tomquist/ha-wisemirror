@@ -150,6 +150,9 @@
           "no_4": "NO.4",
           "no_5": "NO.5"
         }
+      },
+      "weather_location": {
+        "name": "Ubicación del tiempo"
       }
     },
     "sensor": {
@@ -167,7 +170,7 @@
         "name": "Dirección IP"
       },
       "weather_location": {
-        "name": "Ubicación del tiempo"
+        "name": "Ciudad del tiempo"
       },
       "brightness_duration": {
         "name": "Duración del brillo"
@@ -204,7 +207,7 @@
         "name": "Nombre del espejo"
       },
       "location": {
-        "name": "Texto de la ubicación del tiempo"
+        "name": "Ubicación del tiempo (avanzado)"
       }
     },
     "time": {

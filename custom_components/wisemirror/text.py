@@ -51,10 +51,14 @@ class WiseMirrorNameText(WiseMirrorEntity, TextEntity):
 
 
 class WiseMirrorLocationText(WiseMirrorSettingsEntity, TextEntity):
-    """Raw location string, ``<URL-encoded city>(<lat>,<lon>)(<key>)``."""
+    """Raw location string, ``<URL-encoded city>(<lat>,<lon>)(<key>)``.
+
+    For advanced use; the weather location select covers the common case.
+    """
 
     _attr_translation_key = "location"
     _attr_entity_category = EntityCategory.CONFIG
+    _attr_entity_registry_enabled_default = False
     _attr_native_max = 255
 
     def __init__(self, coordinator: WiseMirrorCoordinator) -> None:

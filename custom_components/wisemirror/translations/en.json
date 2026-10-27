@@ -150,6 +150,9 @@
           "no_4": "NO.4",
           "no_5": "NO.5"
         }
+      },
+      "weather_location": {
+        "name": "Weather location"
       }
     },
     "sensor": {
@@ -167,7 +170,7 @@
         "name": "IP address"
       },
       "weather_location": {
-        "name": "Weather location"
+        "name": "Weather city"
       },
       "brightness_duration": {
         "name": "Brightness duration"
@@ -204,7 +207,7 @@
         "name": "Mirror name"
       },
       "location": {
-        "name": "Weather location string"
+        "name": "Weather location (advanced)"
       }
     },
     "time": {

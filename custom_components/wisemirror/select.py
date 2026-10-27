@@ -1,4 +1,4 @@
-"""Selects: temperature unit, weekday language, brightness, weather source."""
+"""Selects: units, language, brightness, weather source and weather location."""
 
 from __future__ import annotations
 
@@ -6,8 +6,14 @@ from collections.abc import Callable
 from dataclasses import dataclass, replace
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
-from homeassistant.const import EntityCategory
-from homeassistant.core import HomeAssistant
+from homeassistant.const import (
+    ATTR_FRIENDLY_NAME,
+    ATTR_LATITUDE,
+    ATTR_LONGITUDE,
+    EVENT_STATE_CHANGED,
+    EntityCategory,
+)
+from homeassistant.core import Event, HomeAssistant, State, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .coordinator import MirrorData, WiseMirrorConfigEntry, WiseMirrorCoordinator
@@ -24,6 +30,7 @@ from .protocol import (
     build_temp_unit,
     build_weather,
     build_weekday_language,
+    parse_location,
     weather_source_key,
 )
 
@@ -103,6 +110,7 @@ async def async_setup_entry(
         WiseMirrorSettingsSelect(coordinator, desc) for desc in SETTINGS_SELECTS
     ]
     entities.append(WiseMirrorWeatherSourceSelect(coordinator))
+    entities.append(WiseMirrorWeatherLocationSelect(coordinator))
     async_add_entities(entities)
 
 
@@ -169,3 +177,100 @@ class WiseMirrorWeatherSourceSelect(WiseMirrorWeatherEntity, SelectEntity):
             )
 
         await self.coordinator.async_write(_build)
+
+
+# Stored coordinates are rounded to two decimals (about 1 km).
+_SAME_PLACE = 0.006
+
+
+class WiseMirrorWeatherLocationSelect(WiseMirrorSettingsEntity, SelectEntity):
+    """Pick the place the mirror shows the weather forecast for.
+
+    The options are Home Assistant's zones; choosing one sends its name and
+    coordinates. A location that matches no zone (for example one set on the
+    mirror before) is offered under its own name and keeps working.
+    """
+
+    _attr_translation_key = "weather_location"
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, coordinator: WiseMirrorCoordinator) -> None:
+        """Initialise the select."""
+        super().__init__(coordinator, "weather_location")
+
+    async def async_added_to_hass(self) -> None:
+        """Follow zones being added, moved or renamed."""
+        await super().async_added_to_hass()
+
+        @callback
+        def _zone_changed(event: Event) -> None:
+            self.async_write_ha_state()
+
+        self.async_on_remove(
+            self.hass.bus.async_listen(
+                EVENT_STATE_CHANGED,
+                _zone_changed,
+                event_filter=callback(
+                    lambda data: data["entity_id"].startswith("zone.")
+                ),
+            )
+        )
+
+    def _zones(self) -> dict[str, State]:
+        """Zones by display name, Home first."""
+        zones: dict[str, State] = {}
+        states = sorted(
+            self.hass.states.async_all("zone"),
+            key=lambda state: (state.entity_id != "zone.home", state.name),
+        )
+        for state in states:
+            if (
+                state.attributes.get(ATTR_LATITUDE) is None
+                or state.attributes.get(ATTR_LONGITUDE) is None
+            ):
+                continue
+            name = state.attributes.get(ATTR_FRIENDLY_NAME) or state.entity_id
+            zones.setdefault(name, state)
+        return zones
+
+    def _current(self) -> tuple[str | None, bool]:
+        """Return (option, matches a zone) for the stored location."""
+        location = parse_location(self.coordinator.data.settings.location)
+        if location is None:
+            return None, False
+        for name, state in self._zones().items():
+            if (
+                abs(state.attributes[ATTR_LATITUDE] - location.latitude) <= _SAME_PLACE
+                and abs(state.attributes[ATTR_LONGITUDE] - location.longitude)
+                <= _SAME_PLACE
+            ):
+                return name, True
+        return location.city or f"{location.latitude}, {location.longitude}", False
+
+    @property
+    def options(self) -> list[str]:
+        """Zones, plus the current location if it matches none."""
+        options = list(self._zones())
+        current, is_zone = self._current()
+        if current is not None and not is_zone:
+            options.append(current if current not in options else f"{current} *")
+        return options
+
+    @property
+    def current_option(self) -> str | None:
+        """The zone (or custom location) the mirror uses."""
+        current, is_zone = self._current()
+        if current is not None and not is_zone and current in self._zones():
+            return f"{current} *"
+        return current
+
+    async def async_select_option(self, option: str) -> None:
+        """Send the zone's name and coordinates."""
+        state = self._zones().get(option)
+        if state is None:
+            return  # the current custom location: nothing to change
+        await self.coordinator.async_set_location(
+            state.name,
+            state.attributes[ATTR_LATITUDE],
+            state.attributes[ATTR_LONGITUDE],
+        )
