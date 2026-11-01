@@ -39,7 +39,8 @@ The workflow runs the full validation first, then:
 
 1. works out the next version from the latest `v*` tag;
 2. writes it into `manifest.json` inside the release zip (the repository
-   itself keeps version `0.0.0`, so nobody edits version numbers by hand);
+   itself keeps version `0.0.0.dev0`, so nobody edits version numbers by hand,
+   and an install of the `main` branch shows up as a dev version);
 3. zips `custom_components/wisemirror` as `wisemirror.zip`, which HACS
    installs (`zip_release` in `hacs.json`);
 4. creates the tag and the GitHub release, with notes listing the commit

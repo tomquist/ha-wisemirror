@@ -1,6 +1,6 @@
 [project]
 name = "ha-wisemirror"
-version = "0.0.0"
+version = "0.0.0.dev0"
 description = "Home Assistant integration for WiseMirror LED mirrors"
 requires-python = ">=3.12"
 license = "Apache-2.0"

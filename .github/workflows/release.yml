@@ -4,7 +4,8 @@ name: Release
 # version. The workflow validates the commit, stamps the version into the
 # integration's manifest.json, zips the integration for HACS and publishes a
 # GitHub release with notes built from the commits since the last release.
-# The repository itself keeps version 0.0.0; releases carry the real one.
+# The repository itself keeps version 0.0.0.dev0 (so installs of main show
+# up as a dev version); releases carry the real one.
 on:
   workflow_dispatch:
     inputs:
