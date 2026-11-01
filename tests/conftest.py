@@ -17,6 +17,16 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 
 
 @pytest.fixture(autouse=True)
+def auto_mock_bluetooth(mock_bluetooth):
+    """Keep the bluetooth dependency off the host's Bluetooth stack.
+
+    Without it, bluetooth setup opens a management socket, which the test
+    socket guard blocks on machines that have Bluetooth support.
+    """
+    return
+
+
+@pytest.fixture(autouse=True)
 def background_scan() -> Generator[AsyncMock]:
     """Keep the background discovery broadcast off the network."""
     with patch.object(discovery, "async_discover", AsyncMock(return_value=[])) as mock:
