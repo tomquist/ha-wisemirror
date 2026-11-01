@@ -1,29 +1,138 @@
 name: Release
 
-# HACS installs from the release tag. This checks that the tag matches the
-# version in manifest.json and pyproject.toml, then runs the usual checks.
+# Start from the Actions tab (or the API): pick a bump, or give an exact
+# version. The workflow validates the commit, stamps the version into the
+# integration's manifest.json, zips the integration for HACS and publishes a
+# GitHub release with notes built from the commits since the last release.
+# The repository itself keeps version 0.0.0; releases carry the real one.
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Part of the version to increase
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+      version:
+        description: Exact version instead (for example 1.2.0 or 1.2.0b1); leave empty to bump
+        type: string
+        default: ""
+      prerelease:
+        description: Publish as a pre-release (HACS shows it to users who opt into betas)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
-  version:
+  validate:
+    uses: ./.github/workflows/validate.yml
+
+  release:
+    needs: validate
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Compare the tag with manifest.json and pyproject.toml
-        run: |
-          tag="${GITHUB_REF_NAME#v}"
-          manifest="$(python3 -c "import json; print(json.load(open('custom_components/wisemirror/manifest.json'))['version'])")"
-          project="$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")"
-          if [ "$tag" != "$manifest" ] || [ "$tag" != "$project" ]; then
-            echo "::error::Tag $GITHUB_REF_NAME does not match manifest.json ($manifest) and pyproject.toml ($project)"
-            exit 1
-          fi
+        with:
+          fetch-depth: 0
 
-  validate:
-    needs: version
-    uses: ./.github/workflows/validate.yml
+      - name: Work out the version
+        id: version
+        env:
+          BUMP: ${{ inputs.bump }}
+          EXPLICIT: ${{ inputs.version }}
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          python3 - <<'EOF' >> "$GITHUB_OUTPUT"
+          import os, re, subprocess
+
+          tags = subprocess.run(
+              ["git", "tag", "--list", "v*"], capture_output=True, text=True, check=True
+          ).stdout.split()
+          pattern = re.compile(r"^v(\d+)\.(\d+)\.(\d+)(?:b(\d+))?$")
+          parsed = [(m, t) for t in tags if (m := pattern.match(t))]
+          stable = sorted(
+              tuple(int(x) for x in m.groups()[:3]) for m, _ in parsed if m[4] is None
+          )
+
+          explicit = os.environ["EXPLICIT"].strip().lstrip("v")
+          if explicit:
+              if not re.fullmatch(r"\d+\.\d+\.\d+(b\d+)?", explicit):
+                  raise SystemExit(f"Invalid version {explicit!r}; use X.Y.Z or X.Y.ZbN")
+              version = explicit
+          else:
+              major, minor, patch = stable[-1] if stable else (0, 0, 0)
+              bump = os.environ["BUMP"]
+              if bump == "major":
+                  major, minor, patch = major + 1, 0, 0
+              elif bump == "minor":
+                  minor, patch = minor + 1, 0
+              else:
+                  patch += 1
+              version = f"{major}.{minor}.{patch}"
+              if os.environ["PRERELEASE"] == "true":
+                  betas = [
+                      int(m[4]) for m, _ in parsed
+                      if m[4] is not None and ".".join(m.groups()[:3]) == version
+                  ]
+                  version = f"{version}b{max(betas) + 1 if betas else 0}"
+
+          if f"v{version}" in tags:
+              raise SystemExit(f"Tag v{version} already exists")
+          # Notes compare against the latest release of any kind.
+          previous = subprocess.run(
+              ["git", "describe", "--tags", "--abbrev=0", "--match", "v*"],
+              capture_output=True, text=True,
+          ).stdout.strip()
+          print(f"version={version}")
+          print(f"tag=v{version}")
+          print(f"previous={previous}")
+          EOF
+          cat "$GITHUB_OUTPUT"
+
+      - name: Stamp the version and build the zip
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          manifest=custom_components/wisemirror/manifest.json
+          jq --arg v "$VERSION" '.version = $v' "$manifest" > manifest.tmp
+          mv manifest.tmp "$manifest"
+          (cd custom_components/wisemirror && zip -r -q "$GITHUB_WORKSPACE/wisemirror.zip" . -x '__pycache__/*' '*/__pycache__/*')
+          unzip -l wisemirror.zip
+
+      - name: Write the release notes
+        env:
+          PREVIOUS: ${{ steps.version.outputs.previous }}
+        run: |
+          range="${PREVIOUS:+$PREVIOUS..}HEAD"
+          {
+            echo "## Changes"
+            echo
+            git log --no-merges --pretty='- %s (%h)' "$range"
+            if [ -n "$PREVIOUS" ]; then
+              echo
+              echo "**Full changelog:** https://github.com/${GITHUB_REPOSITORY}/compare/${PREVIOUS}...v${{ steps.version.outputs.version }}"
+            fi
+          } > notes.md
+          cat notes.md
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          PRERELEASE: ${{ inputs.prerelease || contains(steps.version.outputs.version, 'b') }}
+        run: |
+          flags=()
+          if [ "$PRERELEASE" = "true" ]; then flags+=(--prerelease); else flags+=(--latest); fi
+          gh release create "$TAG" wisemirror.zip \
+            --target "$GITHUB_SHA" \
+            --title "$TAG" \
+            --notes-file notes.md \
+            "${flags[@]}"

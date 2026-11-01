@@ -28,5 +28,21 @@ Translations live in `custom_components/wisemirror/translations/`. `strings.json
 and `translations/en.json` must stay identical, and every other language must
 have the same keys and placeholders; `tests/test_translations.py` checks this.
 
-To release, bump `version` in `manifest.json` and `pyproject.toml` and publish
-a GitHub release tagged `v<version>`.
+## Releasing
+
+Releases are made by the **Release** workflow (Actions → Release → *Run
+workflow*, or `workflow_dispatch` through the API). Choose which part of the
+version to increase (`patch`, `minor`, `major`), or enter an exact version
+such as `1.2.0` or `1.2.0b1`, and whether it is a pre-release.
+
+The workflow runs the full validation first, then:
+
+1. works out the next version from the latest `v*` tag;
+2. writes it into `manifest.json` inside the release zip (the repository
+   itself keeps version `0.0.0`, so nobody edits version numbers by hand);
+3. zips `custom_components/wisemirror` as `wisemirror.zip`, which HACS
+   installs (`zip_release` in `hacs.json`);
+4. creates the tag and the GitHub release, with notes listing the commit
+   subjects since the previous release.
+
+Pre-releases (`X.Y.ZbN`) are offered by HACS to users who enable beta versions.
