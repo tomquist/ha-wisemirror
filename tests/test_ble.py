@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from unittest.mock import patch
 
 import pytest
@@ -17,11 +18,14 @@ from .fake_mirror import MirrorState
 class FakeGattClient:
     """Acknowledges every chunk like the mirror does."""
 
-    def __init__(self, *, drop_first: int = 0, error: bool = False) -> None:
+    def __init__(
+        self, *, drop_first: int = 0, error: bool = False, echo: bool = False
+    ) -> None:
         self.writes: list[bytes] = []
         self.callback = None
         self.drop_first = drop_first
         self.error = error
+        self.echo = echo
         self.disconnected = False
 
     async def start_notify(self, uuid, callback) -> None:
@@ -37,6 +41,10 @@ class FakeGattClient:
             return
         if self.error:
             self.callback(None, bytearray(b"\x00\x00"))
+            return
+        if self.echo:
+            # Acknowledge by echoing the whole chunk back.
+            self.callback(None, bytearray(data))
             return
         ack = bytes(data[:3])
         if data[2] == 0 and data[3] == 0xA5:
@@ -125,3 +133,40 @@ async def test_no_device() -> None:
 def test_random_msg_id() -> None:
     ids = {ble.random_msg_id() for _ in range(2000)}
     assert 0x5A not in ids and 0 not in ids and 255 not in ids
+
+
+async def test_wifi_credentials_stay_out_of_the_log(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """The password must not reach the debug log, in either direction."""
+    password = "s3cret-Passw0rd"
+    fake = FakeGattClient(echo=True)
+    client, patcher = _client(fake)
+    caplog.set_level(logging.DEBUG, logger="custom_components.wisemirror")
+    with patcher:
+        await client.send_wifi_credentials("HomeNet", password)
+
+    log = caplog.text
+    secret = password.encode()
+    assert password not in log
+    # Each chunk carries at most 17 bytes, so look for every 3-byte piece of
+    # the password in the hex forms the log could use.
+    for start in range(len(secret) - 2):
+        piece = secret[start : start + 3]
+        assert piece.hex(" ") not in log
+        assert piece.hex() not in log
+    assert "payload not logged" in log
+    # The credentials were still sent in full.
+    sent = b"".join(write[3:] for write in fake.writes)
+    assert password.encode() in sent
+
+
+async def test_frames_are_still_logged(caplog: pytest.LogCaptureFixture) -> None:
+    """Ordinary commands keep their hex dump for debugging."""
+    fake = FakeGattClient()
+    client, patcher = _client(fake)
+    caplog.set_level(logging.DEBUG, logger="custom_components.wisemirror")
+    with patcher:
+        await client.send_frame(build_name("x"))
+    assert "BLE -> " in caplog.text
+    assert "a5 0f" in caplog.text

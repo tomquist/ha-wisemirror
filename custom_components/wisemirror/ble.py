@@ -74,32 +74,40 @@ class WiseMirrorBleClient:
         except (BleakError, BleakNotFoundError, TimeoutError) as err:
             raise WiseMirrorTimeout(f"Bluetooth connection failed: {err}") from err
 
-    async def send(self, message: bytes) -> BleAck:
-        """Send a chunked message; return the acknowledgement of chunk 0."""
+    async def send(self, message: bytes, *, log_payload: bool = True) -> BleAck:
+        """Send a chunked message; return the acknowledgement of chunk 0.
+
+        With ``log_payload=False`` the debug log shows only chunk offsets and
+        lengths, never the bytes, in both directions (for secrets such as the
+        Wi-Fi password).
+        """
         async with self._lock:
             client = await self._connect()
             try:
-                return await self._send(client, message)
+                return await self._send(client, message, log_payload)
             except BleakError as err:
                 raise WiseMirrorError(f"Bluetooth write failed: {err}") from err
             finally:
                 await client.disconnect()
 
     async def _send(
-        self, client: BleakClientWithServiceCache, message: bytes
+        self, client: BleakClientWithServiceCache, message: bytes, log_payload: bool
     ) -> BleAck:
         msg_id = random_msg_id()
         queue: asyncio.Queue[bytes] = asyncio.Queue()
 
         def _notify(_sender: object, data: bytearray) -> None:
-            _LOGGER.debug("BLE <- %s", bytes(data).hex(" "))
+            if log_payload:
+                _LOGGER.debug("BLE <- %s", bytes(data).hex(" "))
+            else:
+                _LOGGER.debug("BLE <- %d bytes (payload not logged)", len(data))
             queue.put_nowait(bytes(data))
 
         await client.start_notify(BLE_NOTIFY_UUID, _notify)
         first_ack: BleAck | None = None
         try:
             for chunk in chunk_message(message, msg_id):
-                ack = await self._send_chunk(client, queue, chunk)
+                ack = await self._send_chunk(client, queue, chunk, log_payload)
                 if first_ack is None:
                     first_ack = ack
         finally:
@@ -113,11 +121,19 @@ class WiseMirrorBleClient:
         client: BleakClientWithServiceCache,
         queue: asyncio.Queue[bytes],
         chunk: bytes,
+        log_payload: bool,
     ) -> BleAck:
         msg_id, offset = chunk[0], chunk[2]
         loop = asyncio.get_running_loop()
         for _attempt in range(1 + CHUNK_RESENDS):
-            _LOGGER.debug("BLE -> %s", chunk.hex(" "))
+            if log_payload:
+                _LOGGER.debug("BLE -> %s", chunk.hex(" "))
+            else:
+                _LOGGER.debug(
+                    "BLE -> chunk at offset %d, %d bytes (payload not logged)",
+                    offset,
+                    len(chunk),
+                )
             await client.write_gatt_char(BLE_WRITE_UUID, chunk, response=True)
             deadline = loop.time() + ACK_TIMEOUT
             while (remaining := deadline - loop.time()) > 0:
@@ -145,8 +161,10 @@ class WiseMirrorBleClient:
         return ack
 
     async def send_wifi_credentials(self, ssid: str, password: str) -> BleAck:
-        """Send bare-JSON Wi-Fi credentials."""
-        return await self.send(build_wifi_credentials_json(ssid, password))
+        """Send bare-JSON Wi-Fi credentials, keeping them out of the log."""
+        return await self.send(
+            build_wifi_credentials_json(ssid, password), log_payload=False
+        )
 
     async def read_status(self) -> tuple[Settings, WeatherSettings]:
         """Read the status block from 0xAE01."""
